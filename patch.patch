@@ -1,0 +1,69 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index c2c9a47..c6bcbac 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -33,8 +33,8 @@ dependencies = [
+     "docker>=7.0.0",
+     "kubernetes>=23.3.0",
+     "requests>=2.22.0",
+-    "slug>=2.0",
+-    "deepdiff==6.2.2",
++    "unicode-slugify>=0.1.5",
++    "deepdiff>=6.2.2",
+     "pyroute2",
+     "rich",
+     "fs>=2.4.16",
+@@ -55,4 +55,6 @@ test = ["pytest"]
+ 
+ [build-system]
+ requires = ["setuptools>=61.2", "wheel"]
+-build-backend = "setuptools.build_meta"
+\ No newline at end of file
++build-backend = "setuptools.build_meta"
++[project.scripts]
++kathara = "kathara:main"
+\ No newline at end of file
+diff --git a/src/Kathara/utils.py b/src/Kathara/utils.py
+index a8c2a95..cfad17d 100644
+--- a/src/Kathara/utils.py
++++ b/src/Kathara/utils.py
+@@ -19,7 +19,7 @@ from types import ModuleType
+ from typing import Any, Optional, Match, Generator, List, Callable, Union, Dict, Iterable, Tuple
+ 
+ from binaryornot.check import is_binary
+-from slug import slug
++from slugify import slugify
+ 
+ from .exceptions import HostArchitectureError, InvocationError
+ 
+@@ -241,7 +241,7 @@ def get_current_user_name() -> str:
+         import getpass
+         return getpass.getuser()
+ 
+-    return slug("%s-%s" % (exec_by_platform(unix, windows, unix), hostname))
++    return slugify("%s-%s" % (exec_by_platform(unix, windows, unix), hostname))
+ 
+ 
+ def get_current_user_info() -> Any:
+diff --git a/src/kathara.py b/src/kathara.py
+index 89ede02..5cc3652 100755
+--- a/src/kathara.py
++++ b/src/kathara.py
+@@ -105,8 +105,7 @@ class KatharaEntryPoint(object):
+             unregister_cli_events()
+             sys.exit(1)
+ 
+-
+-if __name__ == '__main__':
++def main():
+     try:
+         Setting.get_instance().load_from_disk()
+     except SettingsNotFoundError:
+@@ -132,3 +131,7 @@ if __name__ == '__main__':
+     utils.exec_by_platform(PrivilegeHandler.get_instance().drop_privileges, lambda: None, lambda: None)
+ 
+     KatharaEntryPoint()
++
++
++if __name__ == '__main__':
++    main()
